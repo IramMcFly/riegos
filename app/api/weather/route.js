@@ -1,13 +1,24 @@
 export async function GET() {
-  const apiKey = process.env.API_CLIMA_KEY; // Asegúrate de que esta variable de entorno esté configurada
+  const apiKey = process.env.API_CLIMA_KEY;
   const city = "Chihuahua";
+
+  if (!apiKey) {
+    return new Response(
+      JSON.stringify({
+        error: "La API_CLIMA_KEY no está definida en el entorno.",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 
   try {
     const res = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     );
 
-    // Verifica si hubo error en la respuesta
     if (!res.ok) {
       const errorText = await res.text();
       return new Response(
@@ -30,7 +41,6 @@ export async function GET() {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    // Error de red o fetch fallido
     return new Response(
       JSON.stringify({
         error: "Error de red al conectar con OpenWeatherMap.",
