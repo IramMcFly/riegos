@@ -38,6 +38,9 @@ const Dashboard = () => {
   const porcentajeUso = (aguaUsada / waterLimit) * 100;
   const barraColor =
     porcentajeUso >= 100 ? "#ff3b30" : porcentajeUso >= 80 ? "#ffcc00" : "#4cd964";
+  
+  const porcentajeAhorro = 0.17; // 17% de ahorro
+  const porcentajeAhorroDinero = 0.22; // 22% de ahorro de dinero
 
   useEffect(() => {
     const aguaGuardada = localStorage.getItem("aguaDisponible");
@@ -240,12 +243,90 @@ const Dashboard = () => {
         )}
       </div>
 
+      {/* Contenedor para las tarjetas de ahorro */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Tarjeta de Ahorro de Agua */}
+        <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg">
+          <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-4">Ahorro de Agua Estimado</h3>
+          <div className="flex flex-col items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-36 sm:h-36">
+              <svg className="w-full h-full" viewBox="0 0 100 100">
+                {/* Círculo de fondo */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#e6e6e6" // Un gris claro para el fondo del círculo
+                  strokeWidth="10"
+                />
+                {/* Arco de progreso */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  transform="rotate(-90 50 50)" 
+                  stroke={barraColor} // Usamos el mismo color dinámico de la barra de consumo
+                  strokeWidth="10"
+                  strokeDasharray={`${2 * Math.PI * 42 * porcentajeAhorro} ${2 * Math.PI * 42 * (1 - porcentajeAhorro)}`}
+                  // strokeDashoffset ya no es necesario con la rotación para empezar arriba
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl sm:text-3xl font-bold text-[#2c3e50]">17%</span>
+              </div>
+            </div>
+            <p className="mt-4 text-gray-700 text-md sm:text-lg font-medium text-center">
+              ¡Sigue así! Estás optimizando el uso del agua de manera eficiente.
+            </p>
+          </div>
+        </div>
+
+        {/* Tarjeta de Ahorro de Dinero */}
+        <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg">
+          <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-4">Ahorro de Dinero Estimado</h3>
+          <div className="flex flex-col items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-36 sm:h-36">
+              <svg className="w-full h-full" viewBox="0 0 100 100">
+                {/* Círculo de fondo */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#e6e6e6"
+                  strokeWidth="10"
+                />
+                {/* Arco de progreso */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  transform="rotate(-90 50 50)"
+                  stroke="#4cd964" // Color verde fijo para el ahorro de dinero
+                  strokeWidth="10"
+                  strokeDasharray={`${2 * Math.PI * 42 * porcentajeAhorroDinero} ${2 * Math.PI * 42 * (1 - porcentajeAhorroDinero)}`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl sm:text-3xl font-bold text-[#2c3e50]">22%</span>
+              </div>
+            </div>
+            <p className="mt-4 text-gray-700 text-md sm:text-lg font-medium text-center">
+              Reduciendo costos y maximizando tu inversión.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Alerta humedad */}
       {humedadBaja && (
         <div className="p-6 bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-3xl shadow-lg">
-          <h3 className="font-semibold text-lg sm:text-xl mb-2">
-            ¡Alerta! Un cultivo tiene humedad menor al 50%
-          </h3>
+          <h3 className="font-semibold text-lg sm:text-xl mb-2">¡Alerta! Un cultivo tiene humedad menor al 50%</h3>
           <button
             onClick={() => router.push("/sensores")}
             className="mt-2 px-4 py-2 bg-white text-[#4cd964] font-semibold rounded-full shadow hover:bg-gray-100"
