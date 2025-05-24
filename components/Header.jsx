@@ -49,7 +49,7 @@ export default function Header() {
             <div className="flex items-center gap-3 mr-8">
               <Link href="/" className="flex items-center gap-3">
                 <div className="rounded-full overflow-hidden w-9 h-9">
-                  <Image src="/images/logoDS.png" alt="RiegOS logo" width={36} height={36} />
+                  <Image src="/logo.png" alt="RiegOS logo" width={36} height={36} />
                 </div>
                 <span className="font-bold text-white text-lg">RiegOS</span>
               </Link>
