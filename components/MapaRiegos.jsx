@@ -54,7 +54,14 @@ const MapaRiegos = () => {
     <MapContainer
       center={mapCenter}
       zoom={16}
-      style={{ height: "100vh", width: "100%" }}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        width: '100%',
+        zIndex: 0 // Asegura que el mapa esté detrás del header (z-40) y nav móvil (z-50)
+      }}
     >
       <TileLayer
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
