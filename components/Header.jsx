@@ -15,7 +15,7 @@ const navigationLinks = [
   },
   {
     name: "Mapa de Riegos",
-    href: "/mapa",
+    href: "/riego",
     icon: <Map size={16} />,
   },
   {
