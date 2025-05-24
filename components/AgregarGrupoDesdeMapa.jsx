@@ -17,8 +17,8 @@ import "leaflet-draw";
 import * as turf from "@turf/turf";
 
 // 🧠 Distribución estratégica usando grilla hexagonal
-const generarPuntosOptimosEnPoligono = (poligono, numSensores, radio) => {
-  const hexGrid = turf.hexGrid(turf.bbox(poligono), radio * 2, { units: "meters" });
+const generarPuntosOptimosEnPoligono = (poligono, numSensores, separacion) => {
+  const hexGrid = turf.hexGrid(turf.bbox(poligono), separacion * 2, { units: "meters" });
 
   const puntosDentro = hexGrid.features
     .map((f) => turf.centerOfMass(f))
@@ -30,7 +30,7 @@ const generarPuntosOptimosEnPoligono = (poligono, numSensores, radio) => {
   for (const punto of puntosMezclados) {
     const esValido = puntosFiltrados.every((existente) => {
       const distancia = turf.distance(punto, existente, { units: "meters" });
-      return distancia >= radio;
+      return distancia >= separacion;
     });
 
     if (esValido) puntosFiltrados.push(punto);
@@ -80,9 +80,13 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
       const turfPolygon = turf.polygon([coords]);
 
       const area = turf.area(turfPolygon);
-      const sensoresNecesarios = Math.ceil(area / 7854); // sensor de radio 50m
 
-      const puntosSensores = generarPuntosOptimosEnPoligono(turfPolygon, sensoresNecesarios, 50);
+      const radioCobertura = 100; // metros
+      const separacionSensores = 50; // mínimo entre sensores
+      const areaPorSensor = Math.PI * Math.pow(radioCobertura, 2); // ≈ 31415.9 m²
+
+      const sensoresNecesarios = Math.max(1, Math.floor(area / areaPorSensor));
+      const puntosSensores = generarPuntosOptimosEnPoligono(turfPolygon, sensoresNecesarios, separacionSensores);
 
       const sensorPoints = puntosSensores.map((f, i) => ({
         id: Date.now() + i,
@@ -95,17 +99,10 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
         esMaster: false,
       }));
 
-      // ➕ Calcular centroide promedio como "Master"
-      const coordsLatLng = puntosSensores.map((f) => [
-        f.geometry.coordinates[1],
-        f.geometry.coordinates[0],
-      ]);
-
-      const latProm = coordsLatLng.reduce((sum, [lat]) => sum + lat, 0) / coordsLatLng.length;
-      const lngProm = coordsLatLng.reduce((sum, [, lng]) => sum + lng, 0) / coordsLatLng.length;
-      const centroide = [lngProm, latProm]; // [lng, lat]
-
+      // ➕ Calcular centroide del polígono como "Master"
+      const centroide = turf.centerOfMass(turfPolygon).geometry.coordinates; // [lng, lat]
       const puntoMaster = turf.point(centroide);
+
       if (turf.booleanPointInPolygon(puntoMaster, turfPolygon)) {
         const sensorMaster = {
           id: Date.now() + 9999,
@@ -135,6 +132,7 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
 
   return <FeatureGroup ref={featureGroupRef} />;
 };
+
 
 const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
   const [ubicacion, setUbicacion] = useState([28.634, -106.069]);
