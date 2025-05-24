@@ -28,7 +28,7 @@ const Dashboard = () => {
   const [inputAgua, setInputAgua] = useState("");
   const [editandoLimite, setEditandoLimite] = useState(false);
   const [weatherData, setWeatherData] = useState([]);
-  const [viewMode, setViewMode] = useState("hourly"); // 'hourly' or 'daily'
+  const [viewMode, setViewMode] = useState("hourly");
   const [idealTime, setIdealTime] = useState(null);
   const [humedadActual, setHumedadActual] = useState(null);
   const [error, setError] = useState(null);
@@ -36,23 +36,15 @@ const Dashboard = () => {
   const router = useRouter();
 
   const porcentajeUso = (aguaUsada / waterLimit) * 100;
-  let barraColor = "#4cd964";
-  if (porcentajeUso >= 100) barraColor = "#ff3b30";
-  else if (porcentajeUso >= 80) barraColor = "#ffcc00";
+  const barraColor =
+    porcentajeUso >= 100 ? "#ff3b30" : porcentajeUso >= 80 ? "#ffcc00" : "#4cd964";
 
   useEffect(() => {
     const aguaGuardada = localStorage.getItem("aguaDisponible");
     const usoGuardado = localStorage.getItem("aguaUsada");
 
-    if (aguaGuardada) {
-      const val = parseInt(aguaGuardada);
-      if (!isNaN(val)) setWaterLimit(val);
-    }
-
-    if (usoGuardado) {
-      const val = parseInt(usoGuardado);
-      if (!isNaN(val)) setAguaUsada(val);
-    }
+    if (aguaGuardada) setWaterLimit(parseInt(aguaGuardada));
+    if (usoGuardado) setAguaUsada(parseInt(usoGuardado));
 
     const datosSensores = localStorage.getItem("gruposSensores");
     if (datosSensores) {
@@ -72,20 +64,11 @@ const Dashboard = () => {
     const fetchWeather = async () => {
       try {
         const res = await fetch("/api/weather", { method: "GET" });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`HTTP ${res.status}: ${errorText}`);
-        }
-
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        if (!data.list) throw new Error("Falta propiedad 'list' en la respuesta");
 
-        // Humedad actual del primer elemento
-        const humedad = data.list[0]?.main?.humidity || null;
-        setHumedadActual(humedad);
+        setHumedadActual(data.list[0]?.main?.humidity || null);
 
-        // Vista por hora
         const hourly = data.list.slice(0, 6).map((entry) => {
           const time = new Date(entry.dt * 1000);
           return {
@@ -98,24 +81,18 @@ const Dashboard = () => {
           };
         });
 
-        // Vista por día
         const dailyMap = new Map();
-
         data.list.forEach((entry) => {
           const day = new Date(entry.dt * 1000).toLocaleDateString("es-MX", {
             weekday: "short",
           });
-
-          if (!dailyMap.has(day)) {
-            dailyMap.set(day, []);
-          }
+          if (!dailyMap.has(day)) dailyMap.set(day, []);
           dailyMap.get(day).push(entry);
         });
 
         const daily = Array.from(dailyMap.entries()).slice(0, 4).map(([day, entries]) => {
           const temps = entries.map((e) => e.main.temp);
           const rains = entries.map((e) => e.pop || 0);
-
           return {
             type: "daily",
             day,
@@ -128,7 +105,6 @@ const Dashboard = () => {
 
         setWeatherData({ hourly, daily });
 
-        // Ideal time solo aplica en modo por hora
         const ideal = data.list
           .slice(0, 12)
           .map((entry) => {
@@ -154,19 +130,14 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen pb-24">
-      {/* Consumo de agua */}
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen pb-28">
+      {/* Agua */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg">
-        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">
-          Consumo de agua
-        </h3>
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">Consumo de agua</h3>
         <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
           <div
             className="h-8 rounded-full"
-            style={{
-              width: `${porcentajeUso > 100 ? 100 : porcentajeUso}%`,
-              backgroundColor: barraColor,
-            }}
+            style={{ width: `${porcentajeUso > 100 ? 100 : porcentajeUso}%`, backgroundColor: barraColor }}
           />
         </div>
         <p className="text-sm mt-2 text-gray-700 sm:text-base">
@@ -206,7 +177,7 @@ const Dashboard = () => {
         ) : (
           <button
             onClick={() => setEditandoLimite(true)}
-            className="mt-4 px-4 py-2 text-sm font-semibold bg-white text-[#4cd964] rounded-full shadow hover:bg-gray-100 transition"
+            className="mt-4 px-4 py-2 text-sm font-semibold bg-white text-[#4cd964] rounded-full shadow hover:bg-gray-100"
           >
             Editar límite
           </button>
@@ -215,9 +186,7 @@ const Dashboard = () => {
 
       {/* Clima */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg">
-        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl">
-          Clima y lluvia
-        </h3>
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl">Clima y lluvia</h3>
 
         {humedadActual !== null && (
           <p className="text-sm text-gray-700 mt-1 mb-1">
@@ -226,61 +195,36 @@ const Dashboard = () => {
         )}
 
         <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => setViewMode("hourly")}
-            className={`px-3 py-1 text-sm rounded-full ${viewMode === "hourly" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
-              }`}
-          >
+          <button onClick={() => setViewMode("hourly")} className={`px-3 py-1 text-sm rounded-full ${viewMode === "hourly" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"}`}>
             Ver por hora
           </button>
-          <button
-            onClick={() => setViewMode("daily")}
-            className={`px-3 py-1 text-sm rounded-full ${viewMode === "daily" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
-              }`}
-          >
+          <button onClick={() => setViewMode("daily")} className={`px-3 py-1 text-sm rounded-full ${viewMode === "daily" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"}`}>
             Ver por días
           </button>
         </div>
 
         <p className="text-[#4cd964] mb-3 text-sm sm:text-base mt-2">
-          {viewMode === "hourly" && idealTime
-            ? `Tu hora ideal de riego es a las ${idealTime}`
-            : viewMode === "hourly"
-              ? "No se encontró una hora ideal de riego"
-              : ""}
+          {viewMode === "hourly" && idealTime ? `Tu hora ideal de riego es a las ${idealTime}` : ""}
         </p>
 
-        {error && (
-          <p className="text-red-500 text-sm sm:text-base">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm sm:text-base">{error}</p>}
 
         {weatherData[viewMode] && (
           <div className="bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-xl p-6 shadow-lg mt-4">
             <h4 className="text-lg sm:text-xl font-semibold mb-3">
               {viewMode === "hourly" ? "Pronóstico por hora" : "Pronóstico por día"}
             </h4>
-            <div className="flex overflow-x-auto gap-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6`}>
               {weatherData[viewMode].map((item, i) => {
                 const esIdeal = item.time === idealTime;
                 return (
-                  <div
-                    key={i}
-                    className={`flex flex-col items-center min-w-[120px] px-3 py-2 rounded-xl ${esIdeal ? "bg-white/20 shadow-inner" : ""
-                      }`}
-                  >
+                  <div key={i} className={`flex flex-col items-center px-3 py-2 rounded-xl ${esIdeal ? "bg-white/20 shadow-inner" : ""}`}>
                     {item.icon}
                     <div className="text-base sm:text-lg md:text-xl">
-                      {viewMode === "hourly"
-                        ? `${item.temp}°`
-                        : `${item.tempMin}° - ${item.tempMax}°`}
+                      {viewMode === "hourly" ? `${item.temp}°` : `${item.tempMin}° - ${item.tempMax}°`}
                     </div>
-                    <div className="text-sm sm:text-base">
-                      {item.time || item.day}
-                    </div>
-                    <div
-                      className={`text-sm font-semibold text-center ${esIdeal ? "text-white" : "text-yellow-300"
-                        }`}
-                    >
+                    <div className="text-sm sm:text-base">{item.time || item.day}</div>
+                    <div className={`text-sm font-semibold text-center ${esIdeal ? "text-white" : "text-yellow-300"}`}>
                       Lluvia: {item.rain}%
                       {esIdeal && (
                         <div className="text-xs font-normal text-white mt-1">
@@ -296,7 +240,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Alerta de humedad */}
+      {/* Alerta humedad */}
       {humedadBaja && (
         <div className="p-6 bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-3xl shadow-lg">
           <h3 className="font-semibold text-lg sm:text-xl mb-2">
