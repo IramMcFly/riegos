@@ -12,6 +12,8 @@ import "leaflet/dist/leaflet.css";
 
 const MapaRiegos = () => {
   const [grupos, setGrupos] = useState([]);
+  const [mapCenter, setMapCenter] = useState(null); // Estado para el centro del mapa
+  const defaultCenter = [28.383, -105.483]; // Ubicación por defecto
 
   useEffect(() => {
     const datos = localStorage.getItem("gruposSensores");
@@ -20,13 +22,37 @@ const MapaRiegos = () => {
         setGrupos(JSON.parse(datos));
       } catch (e) {
         console.error("❌ Error al parsear gruposSensores:", e);
+        setGrupos([]);
       }
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setMapCenter([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => {
+          console.error("Error obteniendo la ubicación del usuario:", error);
+          setMapCenter(defaultCenter); // Usar default en caso de error
+        }
+      );
+    } else {
+      console.log("La geolocalización no es soportada por este navegador.");
+      setMapCenter(defaultCenter); // Usar default si no hay soporte
     }
   }, []);
 
+  if (!mapCenter) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        Cargando mapa y obteniendo ubicación...
+      </div>
+    );
+  }
+
   return (
     <MapContainer
-      center={[28.383, -105.483]}
+      center={mapCenter}
       zoom={16}
       style={{ height: "100vh", width: "100%" }}
     >
