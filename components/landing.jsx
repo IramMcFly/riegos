@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link'; // Importar Link para la navegación
 
 const landing = () => {
-    const [isButtonHovered, setIsButtonHovered] = useState(false);
+    const [isDashboardButtonHovered, setIsDashboardButtonHovered] = useState(false);
+    const [isStoreButtonHovered, setIsStoreButtonHovered] = useState(false);
     return (
         <div style={styles.container}>
             <header style={styles.header}>
@@ -12,18 +13,18 @@ const landing = () => {
                 <p style={styles.headerSubtitle}>Soluciones Inteligentes para la Gestión y Monitoreo</p>
             </header>
 
-            <section id="que-somos" style={styles.section}>
-                <h2 style={styles.sectionTitle}>¿Qué somos?</h2>
-                <p style={styles.sectionText}>
+            <section id="que-somos" style={{ ...styles.section, ...styles.quienesSomosSection }}>
+                <h2 style={{ ...styles.sectionTitle, ...styles.quienesSomosText }}>¿Quiénes somos?</h2>
+                <p style={{ ...styles.sectionText, ...styles.quienesSomosText }}>
                     En RiegOS, somos pioneros en la integración de hardware y software para ofrecerte un control total y eficiente.
                     Desarrollamos tecnología que te permite medir, analizar y actuar sobre datos cruciales de tu entorno,
                     facilitando la toma de decisiones inteligentes.
                 </p>
             </section>
 
-            <section id="que-hacemos" style={styles.section}>
-                <h2 style={styles.sectionTitle}>¿Qué hacemos?</h2>
-                <p style={styles.sectionText}>
+            <section id="que-hacemos" style={{ ...styles.section, ...styles.queHacemosSection }}>
+                <h2 style={{ ...styles.sectionTitle, ...styles.queHacemosText }}>¿Qué hacemos?</h2>
+                <p style={{ ...styles.sectionText, ...styles.queHacemosText }}>
                     Nos dedicamos a diseñar y comercializar sensores de alta precisión capaces de medir una amplia gama de variables.
                     Estos datos se integran de manera fluida con nuestra aplicación web, una plataforma intuitiva y potente
                     que te ofrecemos de manera gratuita para que puedas visualizar, gestionar y entender toda la información recolectada.
@@ -45,6 +46,20 @@ const landing = () => {
                 <p style={styles.sectionText}>
                     Con RiegOS, inviertes en hardware de calidad y recibes el software como un valor añadido fundamental.
                 </p>
+                {/* Botón para ir a la tienda */}
+                <div style={styles.sectionButtonContainer}>
+                    <Link
+                        href="/store"
+                        style={{
+                            ...styles.ctaButton, // Reutilizamos el estilo del botón CTA
+                            ...(isStoreButtonHovered ? styles.ctaButtonHover : {})
+                        }}
+                        onMouseEnter={() => setIsStoreButtonHovered(true)}
+                        onMouseLeave={() => setIsStoreButtonHovered(false)}
+                    >
+                        Ir a la Tienda
+                    </Link>
+                </div>
             </section>
 
             {/* Sección para el botón de Call to Action */}
@@ -53,10 +68,10 @@ const landing = () => {
                     href="/dashboard"
                     style={{
                         ...styles.ctaButton,
-                        ...(isButtonHovered ? styles.ctaButtonHover : {})
+                        ...(isDashboardButtonHovered ? styles.ctaButtonHover : {})
                     }}
-                    onMouseEnter={() => setIsButtonHovered(true)}
-                    onMouseLeave={() => setIsButtonHovered(false)}
+                    onMouseEnter={() => setIsDashboardButtonHovered(true)}
+                    onMouseLeave={() => setIsDashboardButtonHovered(false)}
                 >
                     Ir al Dashboard
                 </Link>
@@ -68,7 +83,7 @@ const landing = () => {
 const palette = {
     primary: '#4cd964',       // Verde principal del dashboard/header
     primaryDark: '#3cc456',   // Verde más oscuro para hover, como en SensorStatus
-    secondary: '#e67e22',     // Naranja para acentos y llamadas a la acción
+    secondary: '#e67e22',     // Naranja para acentos y llamadas a la acción (no usado actualmente)
     background: '#ecf0f1',   // Gris muy claro para el fondo general
     textPrimary: '#2c3e50',   // Gris oscuro para texto principal
     textSecondary: '#7f8c8d', // Gris medio para texto secundario
@@ -102,24 +117,49 @@ const styles = {
         color: palette.white, // Cambiado a blanco
         marginTop: '0.5rem',
     },
+    quienesSomosSection: {
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/quienesSomos.png')`, // Oscurece la imagen y la establece como fondo
+        backgroundSize: 'cover', // Asegura que la imagen cubra toda la sección
+        backgroundPosition: 'center', // Centra la imagen
+        color: palette.white, // Color de texto por defecto para esta sección
+    },
+    quienesSomosText: { // Estilo específico para el texto dentro de la sección "Quiénes Somos"
+        color: palette.white, // Texto blanco
+        textShadow: '0px 1px 3px rgba(0, 0, 0, 0.7)', // Sombra de texto para mejorar legibilidad
+    },
+    queHacemosSection: {
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/queHacemos.png')`, // Oscurece la imagen y la establece como fondo
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: palette.white,
+    },
+    queHacemosText: { // Estilo específico para el texto dentro de la sección "Qué Hacemos"
+        color: palette.white,
+        textShadow: '0px 1px 3px rgba(0, 0, 0, 0.7)',
+    },
     section: {
         padding: '30px 20px', // Más padding vertical
         margin: '20px auto',  // Centrar secciones si tienen un maxWidth
         maxWidth: '960px',    // Limitar el ancho para mejor legibilidad en pantallas grandes
-        backgroundColor: palette.white, // Fondo blanco para las secciones para que destaquen
+        backgroundColor: palette.white, // Fondo blanco para las secciones para que destaquen (excepto las que tienen imagen)
         borderRadius: '8px', // Bordes redondeados para suavizar
         boxShadow: `0 2px 4px rgba(0,0,0,0.1)`, // Sombra sutil
         borderBottom: `1px solid ${palette.lightBorder}`, // Borde inferior más sutil
     },
     sectionTitle: {
-        color: palette.primary, // Usar color primario para títulos de sección
+        color: palette.primary, // Usar color primario para títulos de sección (será sobrescrito por quienesSomosText y queHacemosText)
         fontSize: '1.8em', // Aumentado el tamaño del título
         fontWeight: 'bold', // Añadido para mayor énfasis
         textAlign: 'center', // Centrar el título
         marginBottom: '20px', // Ajustado el margen inferior
     },
+    sectionButtonContainer: { // Contenedor para centrar el botón dentro de una sección
+        textAlign: 'center',
+        marginTop: '25px', // Espacio arriba del botón dentro de la sección
+        marginBottom: '10px', // Espacio debajo del botón dentro de la sección
+    },
     sectionText: {
-        color: palette.textSecondary, // Usar color de texto secundario
+        color: palette.textSecondary, // Usar color de texto secundario (será sobrescrito por quienesSomosText y queHacemosText)
         fontSize: '1.1em', // Ligeramente más grande para mejor lectura
     },
     list: {
