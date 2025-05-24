@@ -9,6 +9,7 @@ import {
   WiSunrise,
   WiDayCloudy,
 } from "react-icons/wi";
+import SensorStatus from "./SensorStatus"; // Importar el nuevo componente
 
 const iconMap = {
   "01d": <WiDaySunny size={32} />,
@@ -65,9 +66,7 @@ const Dashboard = () => {
   return (
     <div className="p-4 space-y-4 bg-white min-h-screen">
       {/* Sensores */}
-      <div className="border-2 border-black p-4">
-        <h2 className="text-red-600 font-semibold">4 Sensores Conectados</h2>
-      </div>
+      <SensorStatus /> {/* Reemplazar el div estático con el componente SensorStatus */}
 
       {/* Consumo de agua */}
       <div className="border-2 border-blue-400 p-4">
