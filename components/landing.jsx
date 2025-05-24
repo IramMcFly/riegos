@@ -63,7 +63,7 @@ const landing = () => {
             >
                 <h2 style={{ ...styles.sectionTitle, ...styles.queVendemosText }}>¿Qué vendemos?</h2>
                 <p style={{ ...styles.sectionText, ...styles.queVendemosText }}>
-                    Nuestro principal producto son los **sensores RiegOS**, diseñados para ofrecerte mediciones exactas y confiables.
+                    Nuestro principal producto son los sensores RiegOS, diseñados para ofrecerte mediciones exactas y confiables.
                     Al adquirir nuestros sensores, obtienes acceso gratuito y completo a nuestra aplicación web RiegOS, donde podrás:
                 </p>
                 <ul style={{ ...styles.list, ...styles.queVendemosList }}> {/* Aplicar estilo para la lista */}
@@ -102,7 +102,7 @@ const landing = () => {
                     onMouseEnter={() => setIsDashboardButtonHovered(true)}
                     onMouseLeave={() => setIsDashboardButtonHovered(false)}
                 >
-                    Ir al Dashboard
+                    Probar ahora
                 </Link>
             </div>
         </div>
