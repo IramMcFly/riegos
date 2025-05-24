@@ -154,7 +154,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen pb-24">
       {/* Consumo de agua */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg">
         <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">
@@ -206,7 +206,7 @@ const Dashboard = () => {
         ) : (
           <button
             onClick={() => setEditandoLimite(true)}
-            className="mt-4 px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+            className="mt-4 px-4 py-2 text-sm font-semibold bg-white text-[#4cd964] rounded-full shadow hover:bg-gray-100 transition"
           >
             Editar límite
           </button>
