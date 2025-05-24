@@ -4,6 +4,7 @@ npm install recharts
 npm install react-icons
 npm install lucide-react
 npm install leaflet react-leaflet
+npm install leaflet leaflet-draw @turf/turf
 
 # para iniciar 
 npm run dev

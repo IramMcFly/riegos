@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { Trash2, X, Pencil } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const AgregarGrupoDesdeMapa = dynamic(() => import("@/components/AgregarGrupoDesdeMapa"), {
+  ssr: false,
+});
 
 export default function SensorStatusPage() {
   const grupoInicial = [
@@ -18,9 +23,7 @@ export default function SensorStatusPage() {
 
   const [grupos, setGrupos] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [nuevoNombre, setNuevoNombre] = useState("");
-  const [cantidad, setCantidad] = useState(3);
+  const [modalMapaActivo, setModalMapaActivo] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [confirmMensaje, setConfirmMensaje] = useState("");
   const [onConfirm, setOnConfirm] = useState(() => () => {});
@@ -29,9 +32,6 @@ export default function SensorStatusPage() {
   const [editGrupoIndex, setEditGrupoIndex] = useState(null);
   const [editSensorId, setEditSensorId] = useState(null);
   const [editValues, setEditValues] = useState({});
-
-  const inputBaseClass =
-    "w-full border border-gray-500 text-gray-800 bg-white placeholder-gray-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4cd964] focus:border-[#4cd964]";
 
   useEffect(() => {
     const datosGuardados = localStorage.getItem("gruposSensores");
@@ -52,29 +52,6 @@ export default function SensorStatusPage() {
       localStorage.setItem("gruposSensores", JSON.stringify(grupos));
     }
   }, [grupos, loaded]);
-
-  const crearGrupo = () => {
-    if (!nuevoNombre.trim()) return alert("El nombre del grupo no puede estar vacío.");
-    if (grupos.some((g) => g.nombre.toLowerCase() === nuevoNombre.trim().toLowerCase())) {
-      return alert("Ya existe un grupo con ese nombre.");
-    }
-    if (cantidad < 1) return;
-
-    const nuevoGrupo = {
-      nombre: nuevoNombre.trim(),
-      sensores: Array.from({ length: cantidad }, (_, i) => ({
-        id: Date.now() + i,
-        nombre: `Sensor ${i + 1}`,
-        temperatura: Math.floor(Math.random() * 10) + 20,
-        humedad: Math.floor(Math.random() * 50) + 40,
-      })),
-    };
-
-    setGrupos((prev) => [...prev, nuevoGrupo]);
-    setNuevoNombre("");
-    setCantidad(3);
-    setModalAbierto(false);
-  };
 
   const mostrarConfirmacion = (mensaje, accion) => {
     setConfirmMensaje(mensaje);
@@ -134,48 +111,32 @@ export default function SensorStatusPage() {
     setEditVisible(false);
   };
 
+  const confirmarNuevoGrupo = (grupo) => {
+    if (grupos.some((g) => g.nombre.toLowerCase() === grupo.nombre.toLowerCase())) {
+      alert("Ya existe un grupo con ese nombre.");
+      return;
+    }
+    setGrupos((prev) => [...prev, grupo]);
+    setModalMapaActivo(false);
+  };
+
   return (
     <div className="min-h-screen w-full bg-gray-50 px-6 py-10 relative">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Estado de Sensores</h1>
         <button
-          onClick={() => setModalAbierto(true)}
+          onClick={() => setModalMapaActivo(true)}
           className="bg-[#4cd964] text-white px-4 py-2 rounded-xl shadow hover:bg-[#3cc456]"
         >
           Añadir grupo
         </button>
       </div>
 
-      {modalAbierto && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Nuevo grupo</h2>
-            <input
-              className={inputBaseClass}
-              type="text"
-              placeholder="Nombre del grupo"
-              value={nuevoNombre}
-              onChange={(e) => setNuevoNombre(e.target.value)}
-            />
-            <input
-              className={inputBaseClass + " mt-4"}
-              type="number"
-              min="1"
-              max="20"
-              placeholder="Cantidad de sensores"
-              value={cantidad}
-              onChange={(e) => setCantidad(parseInt(e.target.value))}
-            />
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setModalAbierto(false)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
-                Cancelar
-              </button>
-              <button onClick={crearGrupo} className="px-4 py-2 bg-[#4cd964] text-white rounded-lg hover:bg-[#3cc456]">
-                Crear grupo
-              </button>
-            </div>
-          </div>
-        </div>
+      {modalMapaActivo && (
+        <AgregarGrupoDesdeMapa
+          onGrupoConfirmado={confirmarNuevoGrupo}
+          onCancel={() => setModalMapaActivo(false)}
+        />
       )}
 
       {confirmVisible && (
@@ -199,7 +160,7 @@ export default function SensorStatusPage() {
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md space-y-4">
             <h2 className="text-xl font-bold text-gray-800">Editar {editTipo}</h2>
             <input
-              className={inputBaseClass}
+              className="w-full border border-gray-500 text-gray-800 bg-white placeholder-gray-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4cd964] focus:border-[#4cd964]"
               type="text"
               placeholder="Nombre"
               value={editValues.nombre || ""}
