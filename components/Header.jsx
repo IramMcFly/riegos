@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react" // useState ya no se usará para isMenuOpen
 import Image from "next/image"
-import { LayoutDashboard, Map, Thermometer, User, Menu, X } from "lucide-react"
+import { LayoutDashboard, Map, Thermometer, User } from "lucide-react" // Menu y X ya no son necesarios aquí
 import React from "react"
 import { usePathname } from "next/navigation"
 
@@ -26,15 +26,13 @@ const navigationLinks = [
 ]
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  // The isMobile state and its effect can be removed if Tailwind's responsive classes are sufficient.
-  // For now, we'll keep it to ensure the bottom mobile nav logic remains, but the hamburger menu visibility is fixed.
-  const [isMobileView, setIsMobileView] = useState(false) 
+  // isMenuOpen y su lógica asociada se eliminan
+  const [isMobileView, setIsMobileView] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobileView(window.innerWidth < 768) // Used for bottom nav
+      setIsMobileView(window.innerWidth < 768) // Usado para la barra de navegación inferior
     }
     checkIfMobile()
     window.addEventListener("resize", checkIfMobile)
@@ -55,8 +53,9 @@ export default function Header() {
               </Link>
             </div>
 
-            <nav className={`absolute left-0 right-0 top-16 bg-[#4cd964] md:bg-transparent md:static md:flex md:items-center ${isMenuOpen ? "block" : "hidden md:flex"}`}>
-              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 p-4 md:p-0 md:ml-64">
+            {/* Navegación superior: oculta en móvil, flex en escritorio */}
+            <nav className="hidden md:bg-transparent md:static md:flex md:items-center">
+              <div className="flex flex-row md:ml-64"> {/* Asegura layout horizontal y margen en escritorio */}
                 {navigationLinks.map((link) => (
                   <NavItem
                     key={link.href}
@@ -70,22 +69,11 @@ export default function Header() {
               </div>
             </nav>
 
-            <div className="ml-auto">
-              <button className="text-white hover:bg-[#3EAF57]/20 p-2 rounded-full">
-                <User size={20} />
-              </button>
-            </div>
-
-            {/* Button for mobile menu - md:hidden ensures it's only on small screens */}
-            <button
-              className="md:hidden text-white hover:bg-[#3EAF57]/20 p-2 rounded-full ml-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* El botón del menú hamburguesa se elimina */}
           </div>
         </div>
       </header>
+      {/* Navegación inferior para móviles */}
       {isMobileView && (
         <nav className="fixed bottom-0 left-0 right-0 bg-[#4cd964] text-white h-16 flex items-center justify-around z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
           {navigationLinks.map((link) => (
