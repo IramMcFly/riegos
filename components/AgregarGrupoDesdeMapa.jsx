@@ -1,45 +1,43 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, useMap, FeatureGroup, Polygon, CircleMarker, Tooltip } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  useMap,
+  FeatureGroup,
+  Polygon,
+  CircleMarker,
+  Tooltip,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
 import "leaflet-draw";
 import * as turf from "@turf/turf";
 
-// Función para generar puntos aleatorios dentro de un polígono
-const generarPuntosAleatoriosDentroDelPoligono = (poligono, numSensores, radio) => {
-  let puntosGenerados = [];
-  let intentos = 0;
-  const maxIntentos = numSensores * 10; // Limitar los intentos para evitar bucles infinitos
+// 🧠 Distribución estratégica usando grilla hexagonal
+const generarPuntosOptimosEnPoligono = (poligono, numSensores, radio) => {
+  const hexGrid = turf.hexGrid(turf.bbox(poligono), radio * 2, { units: "meters" });
 
-  // Generar hasta numSensores puntos
-  while (puntosGenerados.length < numSensores && intentos < maxIntentos) {
-    // Generar un punto aleatorio dentro del polígono
-    const puntoAleatorio = turf.randomPoint(1, { bbox: turf.bbox(poligono) }).features[0];
+  const puntosDentro = hexGrid.features
+    .map((f) => turf.centerOfMass(f))
+    .filter((p) => turf.booleanPointInPolygon(p, poligono));
 
-    // Comprobar si el punto está dentro del polígono
-    if (turf.booleanPointInPolygon(puntoAleatorio, poligono)) {
-      let puntoValido = true;
+  const puntosMezclados = puntosDentro.sort(() => Math.random() - 0.5);
+  const puntosFiltrados = [];
 
-      // Comprobar si el nuevo punto está lo suficientemente alejado de los puntos existentes
-      for (let i = 0; i < puntosGenerados.length; i++) {
-        const distancia = turf.distance(puntoAleatorio, puntosGenerados[i], { units: 'meters' });
-        if (distancia < radio) {
-          puntoValido = false;
-          break;
-        }
-      }
+  for (const punto of puntosMezclados) {
+    const esValido = puntosFiltrados.every((existente) => {
+      const distancia = turf.distance(punto, existente, { units: "meters" });
+      return distancia >= radio;
+    });
 
-      // Si el punto es válido, añadirlo a la lista
-      if (puntoValido) {
-        puntosGenerados.push(puntoAleatorio);
-      }
-    }
-
-    intentos++;
+    if (esValido) puntosFiltrados.push(punto);
+    if (puntosFiltrados.length === numSensores) break;
   }
 
-  return puntosGenerados;
+  return puntosFiltrados;
 };
 
 const MapDrawControl = ({ onPoligonoConfirmado }) => {
@@ -78,28 +76,50 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
       drawnItems.addLayer(layer);
 
       const coords = layer.getLatLngs()[0].map((latlng) => [latlng.lng, latlng.lat]);
-      coords.push(coords[0]); // cerrar el polígono
+      coords.push(coords[0]);
       const turfPolygon = turf.polygon([coords]);
 
-      const area = turf.area(turfPolygon); // m²
-      const sensoresNecesarios = Math.ceil(area / 31416); // sensor cubre círculo de r = 100m
+      const area = turf.area(turfPolygon);
+      const sensoresNecesarios = Math.ceil(area / 7854); // sensor de radio 50m
 
-      // Generación de puntos distribuidos de manera estratégica
-      const puntosSensores = generarPuntosAleatoriosDentroDelPoligono(
-        turfPolygon,
-        sensoresNecesarios,
-        100 // radio de 100 metros para evitar solapamientos
-      );
+      const puntosSensores = generarPuntosOptimosEnPoligono(turfPolygon, sensoresNecesarios, 50);
 
       const sensorPoints = puntosSensores.map((f, i) => ({
         id: Date.now() + i,
         lat: f.geometry.coordinates[1],
         lng: f.geometry.coordinates[0],
-        nombre: `Sensor ${i + 1}`, // Nombre por defecto
+        nombre: `Sensor ${i + 1}`,
         temperatura: Math.floor(Math.random() * 10) + 20,
         humedad: Math.floor(Math.random() * 50) + 40,
         coordenadas: [f.geometry.coordinates[1], f.geometry.coordinates[0]],
+        esMaster: false,
       }));
+
+      // ➕ Calcular centroide promedio como "Master"
+      const coordsLatLng = puntosSensores.map((f) => [
+        f.geometry.coordinates[1],
+        f.geometry.coordinates[0],
+      ]);
+
+      const latProm = coordsLatLng.reduce((sum, [lat]) => sum + lat, 0) / coordsLatLng.length;
+      const lngProm = coordsLatLng.reduce((sum, [, lng]) => sum + lng, 0) / coordsLatLng.length;
+      const centroide = [lngProm, latProm]; // [lng, lat]
+
+      const puntoMaster = turf.point(centroide);
+      if (turf.booleanPointInPolygon(puntoMaster, turfPolygon)) {
+        const sensorMaster = {
+          id: Date.now() + 9999,
+          lat: centroide[1],
+          lng: centroide[0],
+          nombre: "Master",
+          temperatura: null,
+          humedad: null,
+          coordenadas: [centroide[1], centroide[0]],
+          esMaster: true,
+        };
+
+        sensorPoints.push(sensorMaster);
+      }
 
       onPoligonoConfirmado({
         polygon: layer.getLatLngs()[0],
@@ -123,31 +143,30 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
   const [gruposExistentes, setGruposExistentes] = useState([]);
 
   useEffect(() => {
-    // Cargar ubicación actual del usuario
     navigator.geolocation.getCurrentPosition(
       (pos) => setUbicacion([pos.coords.latitude, pos.coords.longitude]),
-      () => {}, // Manejar error de geolocalización si es necesario
+      () => {},
       { enableHighAccuracy: true }
     );
 
-    // Cargar grupos existentes desde localStorage
     const datosGuardados = localStorage.getItem("gruposSensores");
     if (datosGuardados) {
       try {
         setGruposExistentes(JSON.parse(datosGuardados));
       } catch (e) {
         console.error("Error al parsear gruposSensores existentes:", e);
-        setGruposExistentes([]); // Asegurar que sea un array en caso de error
+        setGruposExistentes([]);
       }
     }
   }, []);
 
   return (
-    // Contenedor principal del modal
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[80vh] flex flex-col">
         <div className="p-4 border-b">
-          <h2 className="text-lg font-bold text-gray-800">Delimita el área del nuevo grupo de sensores</h2>
+          <h2 className="text-lg font-bold text-gray-800">
+            Delimita el área del nuevo grupo de sensores
+          </h2>
           <input
             type="text"
             placeholder="Nombre del grupo"
@@ -156,7 +175,7 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
             className="mt-2 w-full border px-4 py-2 rounded-lg text-gray-700"
           />
         </div>
-        {/* Contenedor del mapa */}
+
         <div className="flex-1">
           <MapContainer center={ubicacion} zoom={16} style={{ height: "100%", width: "100%" }}>
             <TileLayer
@@ -164,18 +183,17 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
               attribution='Tiles © Esri &mdash; Source: Esri, Earthstar Geographics'
             />
             <MapDrawControl onPoligonoConfirmado={setDatosGrupo} />
-            {/* Mostrar polígono dibujado actualmente */}
+
             {datosGrupo?.polygon && (
               <Polygon positions={datosGrupo.polygon} pathOptions={{ color: "green" }} />
             )}
 
-            {/* Mostrar polígonos de grupos existentes */}
             {gruposExistentes.map((grupo, index) =>
               Array.isArray(grupo.polygon) && grupo.polygon.length >= 3 ? (
                 <Polygon
                   key={`existente-grupo-${index}`}
                   positions={grupo.polygon}
-                  pathOptions={{ color: "blue", weight: 2, dashArray: '5, 5' }} // Estilo diferente para distinguir
+                  pathOptions={{ color: "blue", weight: 2, dashArray: "5, 5" }}
                 >
                   <Tooltip direction="top" sticky>
                     {grupo.nombre.toUpperCase()} (Existente)
@@ -184,27 +202,31 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
               ) : null
             )}
 
-            {/* Mostrar sensores de grupos existentes */}
             {gruposExistentes.flatMap((grupo, grupoIdx) =>
               Array.isArray(grupo.sensores)
                 ? grupo.sensores
-                  .filter((sensor) => sensor.lat !== undefined && sensor.lng !== undefined)
-                  .map((sensor, i) => (
-                    <CircleMarker
-                      key={`existente-sensor-${grupoIdx}-${sensor.id || i}`} // Usar sensor.id si existe, sino el índice
-                      center={[sensor.lat, sensor.lng]}
-                      radius={3} // Más pequeños para no saturar
-                      pathOptions={{ color: "cyan", fillColor: "cyan", fillOpacity: 0.7 }}
-                    >
-                      <Tooltip direction="top" sticky>
-                        Sensor {sensor.nombre || `S-${i + 1}`} (Existente)
-                      </Tooltip>
-                    </CircleMarker>
-                  ))
+                    .filter((sensor) => sensor.lat !== undefined && sensor.lng !== undefined)
+                    .map((sensor, i) => (
+                      <CircleMarker
+                        key={`existente-sensor-${grupoIdx}-${sensor.id || i}`}
+                        center={[sensor.lat, sensor.lng]}
+                        radius={sensor.esMaster ? 6 : 3}
+                        pathOptions={{
+                          color: sensor.esMaster ? "blue" : "cyan",
+                          fillColor: sensor.esMaster ? "blue" : "cyan",
+                          fillOpacity: 0.9,
+                        }}
+                      >
+                        <Tooltip direction="top" sticky>
+                          {sensor.nombre} {sensor.esMaster ? "(Master)" : "(Existente)"}
+                        </Tooltip>
+                      </CircleMarker>
+                    ))
                 : []
             )}
           </MapContainer>
         </div>
+
         <div className="p-4 border-t flex justify-end gap-4">
           <button
             onClick={onCancel}
