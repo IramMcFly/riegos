@@ -1,8 +1,11 @@
-import Dashboard from "@/components/dashboard";
 import MapaRiegos from "@/components/MapaRiegos";
+import Header from "@/components/Header";
 
 export default function Home() {
   return (
-    <MapaRiegos />
-    );
+    <>
+      <Header />
+      <MapaRiegos />
+    </>
+  );
 }
