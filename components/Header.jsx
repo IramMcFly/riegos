@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation"
 const navigationLinks = [
   {
     name: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: <LayoutDashboard size={16} />,
   },
   {
@@ -45,7 +45,7 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             {/* Contenedor del logo */}
             <div className="flex items-center gap-3 mr-8">
-              <Link href="/" className="flex items-center gap-3">
+              <Link href="/dashboard" className="flex items-center gap-3">
                 <div className="rounded-full overflow-hidden w-9 h-9 transition-transform transform hover:scale-105">
                   <Image src="/logo.png" alt="RiegOS logo" width={36} height={36} />
                 </div>
