@@ -66,9 +66,7 @@ const Dashboard = () => {
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Sensores */}
-      <div className="border-2 border-black p-4">
-        <h2 className="text-red-600 font-semibold">4 Sensores Conectados</h2>
-      </div>
+      <SensorStatus />
 
       {/* Consumo de agua */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
