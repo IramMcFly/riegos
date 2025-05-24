@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap, FeatureGroup, Polygon } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -7,6 +5,42 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
 import "leaflet-draw";
 import * as turf from "@turf/turf";
+
+// Función para generar puntos aleatorios dentro de un polígono
+const generarPuntosAleatoriosDentroDelPoligono = (poligono, numSensores, radio) => {
+  let puntosGenerados = [];
+  let intentos = 0;
+  const maxIntentos = numSensores * 10; // Limitar los intentos para evitar bucles infinitos
+
+  // Generar hasta numSensores puntos
+  while (puntosGenerados.length < numSensores && intentos < maxIntentos) {
+    // Generar un punto aleatorio dentro del polígono
+    const puntoAleatorio = turf.randomPoint(1, { bbox: turf.bbox(poligono) }).features[0];
+
+    // Comprobar si el punto está dentro del polígono
+    if (turf.booleanPointInPolygon(puntoAleatorio, poligono)) {
+      let puntoValido = true;
+
+      // Comprobar si el nuevo punto está lo suficientemente alejado de los puntos existentes
+      for (let i = 0; i < puntosGenerados.length; i++) {
+        const distancia = turf.distance(puntoAleatorio, puntosGenerados[i], { units: 'meters' });
+        if (distancia < radio) {
+          puntoValido = false;
+          break;
+        }
+      }
+
+      // Si el punto es válido, añadirlo a la lista
+      if (puntoValido) {
+        puntosGenerados.push(puntoAleatorio);
+      }
+    }
+
+    intentos++;
+  }
+
+  return puntosGenerados;
+};
 
 const MapDrawControl = ({ onPoligonoConfirmado }) => {
   const map = useMap();
@@ -50,12 +84,14 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
       const area = turf.area(turfPolygon); // m²
       const sensoresNecesarios = Math.ceil(area / 31416); // sensor cubre círculo de r = 100m
 
-      const grid = turf.pointGrid(turf.bbox(turfPolygon), 120, {
-        units: "meters",
-        mask: turfPolygon,
-      });
+      // Generación de puntos distribuidos de manera estratégica
+      const puntosSensores = generarPuntosAleatoriosDentroDelPoligono(
+        turfPolygon, 
+        sensoresNecesarios, 
+        100 // radio de 100 metros para evitar solapamientos
+      );
 
-      const sensorPoints = grid.features.slice(0, sensoresNecesarios).map((f, i) => ({
+      const sensorPoints = puntosSensores.map((f, i) => ({
         id: Date.now() + i,
         lat: f.geometry.coordinates[1],
         lng: f.geometry.coordinates[0],
