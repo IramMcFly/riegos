@@ -99,15 +99,15 @@ const Dashboard = () => {
             <h4 className="text-lg sm:text-xl font-semibold mb-3">
               Pronóstico por hora
             </h4>
-            <div className="flex overflow-x-auto gap-6">
+            <div className="transition-all duration-300 ease-in-out flex overflow-x-auto gap-6">
               {hourlyData.map((item, i) => (
                 <div
                   key={i}
-                  className="flex flex-col items-center min-w-[80px] sm:min-w-[100px] text-center"
+                  className="flex flex-col items-center min-w-[120px] sm:min-w-[150px] md:min-w-[160px]"
                 >
                   {item.icon}
-                  <div className="text-sm sm:text-base">{item.temp}°</div>
-                  <div className="text-xs sm:text-sm">{item.time}</div>
+                  <div className="text-base sm:text-lg md:text-xl">{item.temp}°</div>
+                  <div className="text-sm sm:text-base">{item.time}</div>
                   <div className="text-lg sm:text-xl font-semibold text-yellow-300">
                     {item.rain}%
                   </div>
