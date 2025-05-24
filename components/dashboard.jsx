@@ -6,6 +6,7 @@ import {
   WiSunrise, WiDayCloudy,
 } from "react-icons/wi";
 import { useRouter } from "next/navigation";
+import { FaStar } from "react-icons/fa";
 
 const iconMap = {
   "01d": <WiDaySunny size={32} />,
@@ -227,17 +228,15 @@ const Dashboard = () => {
         <div className="flex gap-2 mt-3">
           <button
             onClick={() => setViewMode("hourly")}
-            className={`px-3 py-1 text-sm rounded-full ${
-              viewMode === "hourly" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
-            }`}
+            className={`px-3 py-1 text-sm rounded-full ${viewMode === "hourly" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
+              }`}
           >
             Ver por hora
           </button>
           <button
             onClick={() => setViewMode("daily")}
-            className={`px-3 py-1 text-sm rounded-full ${
-              viewMode === "daily" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
-            }`}
+            className={`px-3 py-1 text-sm rounded-full ${viewMode === "daily" ? "bg-[#4cd964] text-white" : "bg-gray-200 text-gray-800"
+              }`}
           >
             Ver por días
           </button>
@@ -247,8 +246,8 @@ const Dashboard = () => {
           {viewMode === "hourly" && idealTime
             ? `Tu hora ideal de riego es a las ${idealTime}`
             : viewMode === "hourly"
-            ? "No se encontró una hora ideal de riego"
-            : ""}
+              ? "No se encontró una hora ideal de riego"
+              : ""}
         </p>
 
         {error && (
@@ -266,9 +265,8 @@ const Dashboard = () => {
                 return (
                   <div
                     key={i}
-                    className={`flex flex-col items-center min-w-[120px] px-3 py-2 rounded-xl ${
-                      esIdeal ? "bg-white/20 shadow-inner" : ""
-                    }`}
+                    className={`flex flex-col items-center min-w-[120px] px-3 py-2 rounded-xl ${esIdeal ? "bg-white/20 shadow-inner" : ""
+                      }`}
                   >
                     {item.icon}
                     <div className="text-base sm:text-lg md:text-xl">
@@ -280,14 +278,13 @@ const Dashboard = () => {
                       {item.time || item.day}
                     </div>
                     <div
-                      className={`text-sm font-semibold text-center ${
-                        esIdeal ? "text-white" : "text-yellow-300"
-                      }`}
+                      className={`text-sm font-semibold text-center ${esIdeal ? "text-white" : "text-yellow-300"
+                        }`}
                     >
                       Lluvia: {item.rain}%
                       {esIdeal && (
                         <div className="text-xs font-normal text-white mt-1">
-                          🌟 Hora ideal
+                          <FaStar className="inline text-yellow-300 mr-1" /> Hora ideal
                         </div>
                       )}
                     </div>
