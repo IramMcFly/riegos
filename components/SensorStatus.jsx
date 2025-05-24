@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Trash2, X, Pencil, AlertTriangle } from "lucide-react";
+import { Trash2, X, Pencil, AlertTriangle, Info } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const AgregarGrupoDesdeMapa = dynamic(() => import("@/components/AgregarGrupoDesdeMapa"), {
     ssr: false,
 });
 
-// Nuevo componente para la tarjeta de cada grupo
 function GrupoCard({ grupo, grupoIndex, abrirEdicion, eliminarGrupo, eliminarSensor }) {
     const { promedioHumedad, alertaHumedad } = useMemo(() => {
         if (!grupo.sensores || grupo.sensores.length === 0) {
@@ -22,22 +21,76 @@ function GrupoCard({ grupo, grupoIndex, abrirEdicion, eliminarGrupo, eliminarSen
         };
     }, [grupo.sensores]);
 
+    const [tooltip, setTooltip] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const cacheKey = `info-cultivo-${grupo.nombre.toLowerCase()}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            setTooltip(cached);
+            return;
+        }
+
+        const obtenerInfo = async () => {
+            if (!grupo.nombre) return;
+            setLoading(true);
+            try {
+                const res = await fetch("/api/ia", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "llama3-8b-8192",
+                        messages: [
+                            {
+                                role: "user",
+                                content: `Responde con 1 líneas: temperatura, humedad y riego ideales para el cultivo de ${grupo.nombre}. Sé concreto.`,
+                            },
+                        ],
+                    }),
+                });
+                const data = await res.json();
+                console.log("💬 Respuesta IA:", data);
+                const mensaje = data.mensaje?.trim();
+
+                if (mensaje) {
+                    setTooltip(mensaje);
+                } else {
+                    setTooltip("No se encontraron datos para este cultivo.");
+                }
+            } catch (err) {
+                console.error("❌ Error al obtener info IA:", err);
+                setTooltip("Error al obtener información.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        obtenerInfo();
+    }, [grupo.nombre]);
+
+
     return (
         <div
-            className={`group bg-white border rounded-xl shadow-md p-5 space-y-4 transition-all duration-300 transform hover:scale-102 hover:shadow-lg ${
-                alertaHumedad
+            className={`group bg-white border rounded-xl shadow-md p-5 space-y-4 transition-all duration-300 transform hover:scale-102 hover:shadow-lg ${alertaHumedad
                     ? "border-red-400 bg-red-50 hover:border-red-500"
                     : "border-gray-200 hover:border-gray-300"
-            }`}
+                }`}
         >
             <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 relative">
                     {alertaHumedad && (
                         <AlertTriangle size={20} className="text-red-500 flex-shrink-0" />
                     )}
                     <h2 className={`text-lg font-semibold ${alertaHumedad ? "text-red-700" : "text-gray-700"}`}>
                         Grupo: {grupo.nombre}
                     </h2>
+                    <div className="relative group cursor-pointer">
+                        <Info size={18} className="text-blue-500 mt-0.5" />
+                        <div className="absolute z-50 mt-2 w-64 p-3 bg-white text-sm text-gray-700 border border-gray-300 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            {loading ? "Cargando información..." : tooltip || "Sin datos disponibles."}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">
                     <button onClick={() => abrirEdicion("grupo", grupoIndex)} className="text-blue-500 hover:text-blue-600 p-1">
@@ -56,14 +109,20 @@ function GrupoCard({ grupo, grupoIndex, abrirEdicion, eliminarGrupo, eliminarSen
             )}
             <div className="grid gap-4">
                 {grupo.sensores.map((sensor) => (
-                    <SensorItem key={sensor.id} sensor={sensor} grupoNombre={grupo.nombre} grupoIndex={grupoIndex} abrirEdicion={abrirEdicion} eliminarSensor={eliminarSensor} />
+                    <SensorItem
+                        key={sensor.id}
+                        sensor={sensor}
+                        grupoNombre={grupo.nombre}
+                        grupoIndex={grupoIndex}
+                        abrirEdicion={abrirEdicion}
+                        eliminarSensor={eliminarSensor}
+                    />
                 ))}
             </div>
         </div>
     );
 }
 
-// Nuevo componente para cada item de sensor (opcional, pero bueno para la organización)
 function SensorItem({ sensor, grupoNombre, grupoIndex, abrirEdicion, eliminarSensor }) {
     return (
         <div key={sensor.id} className="relative p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-300 group/sensor">
