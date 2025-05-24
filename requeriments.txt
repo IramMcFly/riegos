@@ -2,6 +2,7 @@
 npm i
 npm install recharts
 npm install react-icons
+npm install leaflet react-leaflet
 
 # para iniciar 
 npm run dev

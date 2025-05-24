@@ -1,62 +1,123 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { FaSignal, FaExclamationTriangle, FaBatteryThreeQuarters, FaBatteryEmpty, FaCheckCircle } from "react-icons/fa";
+import React, { useState } from "react";
 
-// Datos de ejemplo para los sensores
-const initialSensors = [
-    { id: 1, name: "Sensor de Humedad - Cultivo #1 (Papas)", status: "online", battery: 80, lastReading: "Hace 2 minutos" },
-    { id: 2, name: "Sensor de Temperatura - Ambiente", status: "online", battery: 95, lastReading: "Hace 1 minuto" },
-    { id: 3, name: "Sensor de Nivel de Agua - Tanque Principal", status: "warning", battery: 30, lastReading: "Hace 5 minutos", message: "Batería baja" },
-    { id: 4, name: "Sensor de Flujo - Riego Sector A", status: "offline", battery: 0, lastReading: "Hace 1 hora", message: "Desconectado" },
-    { id: 5, name: "Sensor de Humedad - Cultivo #2 (Tomates)", status: "online", battery: 70, lastReading: "Hace 3 minutos" },
-];
+export default function SensorStatusPage() {
+  const [grupos, setGrupos] = useState([
+    {
+      nombre: "Papas",
+      sensores: [
+        { id: 1, nombre: "Sensor 1", temperatura: 23, humedad: 60 },
+        { id: 2, nombre: "Sensor 2", temperatura: 25, humedad: 55 },
+        { id: 3, nombre: "Sensor 3", temperatura: 22, humedad: 70 },
+        { id: 4, nombre: "Sensor 4", temperatura: 24, humedad: 65 },
+      ],
+    },
+  ]);
 
-const SensorStatusIcon = ({ status, battery }) => {
-    if (status === "offline") {
-        return <FaSignal size={20} className="text-gray-400" title="Desconectado" />;
-    }
-    if (status === "warning" || battery < 20) {
-        return <FaExclamationTriangle size={20} className="text-yellow-500" title="Advertencia" />;
-    }
-    return <FaCheckCircle size={20} className="text-green-500" title="Online" />;
-};
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [cantidad, setCantidad] = useState(3);
 
-const BatteryIcon = ({ level }) => {
-    if (level < 20) return <FaBatteryEmpty size={20} className="text-red-500" title={`Batería: ${level}%`} />;
-    if (level < 50) return <FaBatteryThreeQuarters size={20} className="text-yellow-500" transform="rotate(-90)" title={`Batería: ${level}%`} />; // Simple representation
-    return <FaBatteryThreeQuarters size={20} className="text-green-500" title={`Batería: ${level}%`} />;
-};
+  const crearGrupo = () => {
+    if (!nuevoNombre || cantidad < 1) return;
 
-const SensorStatus = () => {
-    const [sensors, setSensors] = useState(initialSensors);
+    const nuevoGrupo = {
+      nombre: nuevoNombre,
+      sensores: Array.from({ length: cantidad }, (_, i) => ({
+        id: Date.now() + i,
+        nombre: `Sensor ${i + 1}`,
+        temperatura: Math.floor(Math.random() * 10) + 20,
+        humedad: Math.floor(Math.random() * 50) + 40,
+      })),
+    };
 
-    // Aquí podrías añadir un useEffect para obtener los datos de los sensores de una API
-    // useEffect(() => {
-    //   fetch('/api/sensors')
-    //     .then(res => res.json())
-    //     .then(data => setSensors(data));
-    // }, []);
+    setGrupos((prev) => [...prev, nuevoGrupo]);
+    setNuevoNombre("");
+    setCantidad(3);
+    setModalAbierto(false);
+  };
 
-    return (
-        <div className="p-4 bg-white rounded-lg shadow-md border-2 border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Estado de Sensores Conectados</h2>
-            <div className="space-y-3">
-                {sensors.map((sensor) => (
-                    <div key={sensor.id} className="p-3 bg-gray-50 rounded-md border border-gray-300 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <SensorStatusIcon status={sensor.status} battery={sensor.battery} />
-                            <div>
-                                <p className="font-medium text-gray-800">{sensor.name}</p>
-                                <p className="text-xs text-gray-500">Última lectura: {sensor.lastReading} {sensor.message && <span className="text-yellow-600">- {sensor.message}</span>}</p>
-                            </div>
-                        </div>
-                        <BatteryIcon level={sensor.battery} />
-                    </div>
-                ))}
+  return (
+    <div className="min-h-screen w-full bg-gray-50 px-6 py-10 relative">
+      {/* Encabezado */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Estado de Sensores</h1>
+        <button
+          onClick={() => setModalAbierto(true)}
+          className="bg-[#4cd964] text-white px-4 py-2 rounded-xl shadow hover:bg-[#3cc456] transition"
+        >
+          Añadir grupo
+        </button>
+      </div>
+
+      {/* Modal */}
+      {modalAbierto && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Nuevo grupo</h2>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Nombre del grupo"
+                value={nuevoNombre}
+                onChange={(e) => setNuevoNombre(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              />
+              <input
+                type="number"
+                min="1"
+                max="20"
+                placeholder="Cantidad de sensores"
+                value={cantidad}
+                onChange={(e) => setCantidad(parseInt(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              />
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setModalAbierto(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={crearGrupo}
+                  className="px-4 py-2 bg-[#4cd964] text-white rounded-lg hover:bg-[#3cc456]"
+                >
+                  Crear grupo
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-    );
-};
+      )}
 
-export default SensorStatus;
+      {/* Listado de grupos */}
+      {grupos.map((grupo, index) => (
+        <div key={index} className="mb-10">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            Grupo: {grupo.nombre}
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {grupo.sensores.map((sensor) => (
+              <div
+                key={sensor.id}
+                className="p-4 bg-white rounded-xl border border-gray-300 shadow space-y-2"
+              >
+                <h3 className="font-medium text-gray-800">{sensor.nombre}</h3>
+                <p className="text-sm text-gray-600">
+                  🌡️ <span className="font-medium">Temperatura:</span>{" "}
+                  <span className="font-semibold">{sensor.temperatura}°C</span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  💧 <span className="font-medium">Humedad:</span>{" "}
+                  <span className="font-semibold">{sensor.humedad}%</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
