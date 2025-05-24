@@ -42,10 +42,10 @@ export default function SensorStatusPage() {
     <div className="min-h-screen w-full bg-gray-50 px-6 py-10 relative">
       {/* Encabezado */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Estado de Sensores</h1>
+        <h1 className="text-3xl font-bold text-[#5ac8fa]">Estado de Sensores</h1>
         <button
           onClick={() => setModalAbierto(true)}
-          className="bg-[#4cd964] text-white px-4 py-2 rounded-xl shadow hover:bg-[#3cc456] transition"
+          className="bg-[#4cd964] text-white px-6 py-3 rounded-xl shadow hover:bg-[#3cc456] transition"
         >
           Añadir grupo
         </button>
@@ -62,7 +62,7 @@ export default function SensorStatusPage() {
                 placeholder="Nombre del grupo"
                 value={nuevoNombre}
                 onChange={(e) => setNuevoNombre(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#5ac8fa] text-gray-800"
               />
               <input
                 type="number"
@@ -71,7 +71,7 @@ export default function SensorStatusPage() {
                 placeholder="Cantidad de sensores"
                 value={cantidad}
                 onChange={(e) => setCantidad(parseInt(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#5ac8fa] text-gray-800"
               />
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -82,7 +82,7 @@ export default function SensorStatusPage() {
                 </button>
                 <button
                   onClick={crearGrupo}
-                  className="px-4 py-2 bg-[#4cd964] text-white rounded-lg hover:bg-[#3cc456]"
+                  className="px-4 py-2 bg-[#4cd964] text-white rounded-lg hover:bg-[#3cc456] transition"
                 >
                   Crear grupo
                 </button>
@@ -95,14 +95,14 @@ export default function SensorStatusPage() {
       {/* Listado de grupos */}
       {grupos.map((grupo, index) => (
         <div key={index} className="mb-10">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+          <h2 className="text-2xl font-semibold text-[#5ac8fa] mb-4">
             Grupo: {grupo.nombre}
           </h2>
-          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {grupo.sensores.map((sensor) => (
               <div
                 key={sensor.id}
-                className="p-4 bg-white rounded-xl border border-gray-300 shadow space-y-2"
+                className="p-4 bg-white rounded-xl border border-[#4cd964] shadow space-y-2 hover:shadow-xl transition-shadow hover:bg-[#f4f9f4]"
               >
                 <h3 className="font-medium text-gray-800">{sensor.nombre}</h3>
                 <p className="text-sm text-gray-600">
