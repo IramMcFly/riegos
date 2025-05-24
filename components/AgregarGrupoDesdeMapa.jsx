@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { AlertTriangle } from "lucide-react";
 import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
 import "leaflet-draw";
@@ -109,11 +110,12 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
           lat: centroide[1],
           lng: centroide[0],
           nombre: "Master",
-          temperatura: null,
-          humedad: null,
+          temperatura: Math.floor(Math.random() * 10) + 20,
+          humedad: Math.floor(Math.random() * 50) + 40,
           coordenadas: [centroide[1], centroide[0]],
           esMaster: true,
         };
+
 
         sensorPoints.push(sensorMaster);
       }
@@ -143,7 +145,7 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => setUbicacion([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
+      () => { },
       { enableHighAccuracy: true }
     );
 
@@ -203,25 +205,51 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
             {gruposExistentes.flatMap((grupo, grupoIdx) =>
               Array.isArray(grupo.sensores)
                 ? grupo.sensores
-                    .filter((sensor) => sensor.lat !== undefined && sensor.lng !== undefined)
-                    .map((sensor, i) => (
-                      <CircleMarker
-                        key={`existente-sensor-${grupoIdx}-${sensor.id || i}`}
-                        center={[sensor.lat, sensor.lng]}
-                        radius={sensor.esMaster ? 6 : 3}
-                        pathOptions={{
-                          color: sensor.esMaster ? "blue" : "cyan",
-                          fillColor: sensor.esMaster ? "blue" : "cyan",
-                          fillOpacity: 0.9,
-                        }}
-                      >
-                        <Tooltip direction="top" sticky>
-                          {sensor.nombre} {sensor.esMaster ? "(Master)" : "(Existente)"}
-                        </Tooltip>
-                      </CircleMarker>
-                    ))
+                  .filter((sensor) => sensor.lat !== undefined && sensor.lng !== undefined)
+                  .map((sensor, i) => {
+                    const esCritico = sensor.humedad < 50 && sensor.nombre.toLowerCase() !== "master";
+                    const colorBase = sensor.esMaster ? "blue" : esCritico ? "red" : "cyan";
+
+                    return (
+                      <React.Fragment key={`existente-sensor-${grupoIdx}-${sensor.id || i}`}>
+                        <CircleMarker
+                          center={[sensor.lat, sensor.lng]}
+                          radius={sensor.esMaster ? 6 : 3}
+                          pathOptions={{
+                            color: colorBase,
+                            fillColor: colorBase,
+                            fillOpacity: 0.9,
+                          }}
+                        >
+                          <Tooltip direction="top" sticky>
+                            {sensor.nombre}{" "}
+                            {sensor.esMaster
+                              ? "(Master)"
+                              : esCritico
+                                ? "(Baja humedad)"
+                                : "(Existente)"}
+                          </Tooltip>
+                        </CircleMarker>
+
+                        {esCritico && (
+                          <AlertTriangle
+                            size={16}
+                            color="red"
+                            style={{
+                              position: "absolute",
+                              transform: "translate(-50%, -50%)",
+                              left: `${sensor.lng}px`,
+                              top: `${sensor.lat}px`,
+                              zIndex: 1000,
+                            }}
+                          />
+                        )}
+                      </React.Fragment>
+                    );
+                  })
                 : []
             )}
+
           </MapContainer>
         </div>
 
