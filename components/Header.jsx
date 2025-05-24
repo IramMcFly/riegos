@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react" // useState ya no se usará para isMenuOpen
+import { useEffect, useState } from "react" 
 import Image from "next/image"
-import { LayoutDashboard, Map, Thermometer, User } from "lucide-react" // Menu y X ya no son necesarios aquí
+import { LayoutDashboard, Map, Thermometer, User } from "lucide-react" 
 import React from "react"
 import { usePathname } from "next/navigation"
 
@@ -26,13 +26,12 @@ const navigationLinks = [
 ]
 
 export default function Header() {
-  // isMenuOpen y su lógica asociada se eliminan
   const [isMobileView, setIsMobileView] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobileView(window.innerWidth < 768) // Usado para la barra de navegación inferior
+      setIsMobileView(window.innerWidth < 768)
     }
     checkIfMobile()
     window.addEventListener("resize", checkIfMobile)
@@ -41,21 +40,22 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#4cd964] shadow-md">
+      <header className="sticky top-0 z-40 w-full bg-[#4cd964] shadow-lg">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex h-16 items-center">
+          <div className="flex h-16 items-center justify-between"> {/* Cambié flex-grow por justify-between */}
+            {/* Contenedor del logo */}
             <div className="flex items-center gap-3 mr-8">
               <Link href="/" className="flex items-center gap-3">
-                <div className="rounded-full overflow-hidden w-9 h-9">
+                <div className="rounded-full overflow-hidden w-9 h-9 transition-transform transform hover:scale-105">
                   <Image src="/logo.png" alt="RiegOS logo" width={36} height={36} />
                 </div>
                 <span className="font-bold text-white text-lg">RiegOS</span>
               </Link>
             </div>
 
-            {/* Navegación superior: oculta en móvil, flex en escritorio */}
-            <nav className="hidden md:bg-transparent md:static md:flex md:items-center">
-              <div className="flex flex-row md:ml-64"> {/* Asegura layout horizontal y margen en escritorio */}
+            {/* Contenedor de navegación */}
+            <div className="flex-grow flex justify-center"> {/* Aquí sigue el centro */}
+              <nav className="flex items-center gap-4 mx-auto">
                 {navigationLinks.map((link) => (
                   <NavItem
                     key={link.href}
@@ -66,16 +66,15 @@ export default function Header() {
                     {link.name}
                   </NavItem>
                 ))}
-              </div>
-            </nav>
-
-            {/* El botón del menú hamburguesa se elimina */}
+              </nav>
+            </div>
           </div>
         </div>
       </header>
+
       {/* Navegación inferior para móviles */}
       {isMobileView && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-[#4cd964] text-white h-16 flex items-center justify-around z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+        <nav className="fixed bottom-0 left-0 right-0 bg-[#4cd964] text-white h-16 flex items-center justify-around z-50 shadow-xl rounded-t-2xl">
           {navigationLinks.map((link) => (
             <MobileNavItem
               key={link.href}
@@ -95,9 +94,9 @@ function NavItem({ href, children, active, icon }) {
   return (
     <Link
       href={href}
-      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${active ? "bg-[#3EAF57] text-white" : "text-white hover:bg-[#3EAF57]/70"}`}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${active ? "bg-[#3EAF57] text-white" : "text-white hover:bg-[#3EAF57]/70"}`}
     >
-      {icon && <span className="mr-2">{icon}</span>}
+      {icon && <span className="text-white">{icon}</span>}
       {children}
     </Link>
   )
