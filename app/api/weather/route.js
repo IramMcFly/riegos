@@ -1,5 +1,5 @@
 export async function GET() {
-  const apiKey = "2f8a596c6fdbc0414c909b0235dd38a2";
+  const apiKey = process.env.API_CLIMA_KEY; // Asegúrate de que esta variable de entorno esté configurada
   const city = "Chihuahua";
 
   try {

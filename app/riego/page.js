@@ -1,3 +1,5 @@
+"use client";
+
 import MapaRiegos from "@/components/MapaRiegos";
 import Header from "@/components/Header";
 
