@@ -9,7 +9,7 @@ import {
   WiSunrise,
   WiDayCloudy,
 } from "react-icons/wi";
-import SensorStatus from "./SensorStatus"; // Importar el nuevo componente
+import { useRouter } from "next/navigation"; // Importar router
 
 const iconMap = {
   "01d": <WiDaySunny size={32} />,
@@ -29,6 +29,7 @@ const Dashboard = () => {
   const [waterLimit, setWaterLimit] = useState(10000);
   const [hourlyData, setHourlyData] = useState(null);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   const usedLiters = waterLimit * 0.68;
 
@@ -65,12 +66,11 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      {/* Sensores */}
-      <SensorStatus />
-
       {/* Consumo de agua */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">Consumo de agua</h3>
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">
+          Consumo de agua
+        </h3>
         <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
           <div
             className="bg-[#4cd964] h-8 rounded-full"
@@ -84,15 +84,21 @@ const Dashboard = () => {
 
       {/* Pronóstico por hora */}
       <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl">Clima y lluvia</h3>
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl">
+          Clima y lluvia
+        </h3>
         <p className="text-[#4cd964] mb-3 text-sm sm:text-base">
           Tu hora ideal de riego es a las 2AM
         </p>
-        {error && <p className="text-red-500 text-sm sm:text-base">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm sm:text-base">{error}</p>
+        )}
 
         {hourlyData && (
           <div className="bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-xl p-6 shadow-lg">
-            <h4 className="text-lg sm:text-xl font-semibold mb-3">Pronóstico por hora</h4>
+            <h4 className="text-lg sm:text-xl font-semibold mb-3">
+              Pronóstico por hora
+            </h4>
             <div className="flex overflow-x-auto gap-6">
               {hourlyData.map((item, i) => (
                 <div
@@ -114,9 +120,15 @@ const Dashboard = () => {
 
       {/* Alerta de humedad */}
       <div className="p-6 bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <h3 className="font-semibold text-lg sm:text-xl">
+        <h3 className="font-semibold text-lg sm:text-xl mb-2">
           ¡Cultivo #1 (PAPAS) bajo en humedad!
         </h3>
+        <button
+          onClick={() => router.push("/sensores")}
+          className="mt-2 px-4 py-2 bg-white text-[#4cd964] font-semibold rounded-full shadow hover:bg-gray-100 transition"
+        >
+          Ver sensores
+        </button>
       </div>
     </div>
   );
