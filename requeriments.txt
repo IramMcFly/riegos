@@ -1,0 +1,7 @@
+# instalar
+npm i
+npm install recharts
+npm install react-icons
+
+# para iniciar 
+npm run dev
