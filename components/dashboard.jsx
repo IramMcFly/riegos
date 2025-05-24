@@ -64,45 +64,49 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="p-4 space-y-4 bg-white min-h-screen">
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Sensores */}
-      <SensorStatus /> {/* Reemplazar el div estático con el componente SensorStatus */}
+      <div className="border-2 border-black p-4">
+        <h2 className="text-red-600 font-semibold">4 Sensores Conectados</h2>
+      </div>
 
       {/* Consumo de agua */}
-      <div className="border-2 border-blue-400 p-4">
-        <h3 className="text-red-600 font-semibold mb-2">Consumo de agua</h3>
-        <div className="w-full bg-gray-200 rounded-full h-6">
+      <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl mb-3">Consumo de agua</h3>
+        <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
           <div
-            className="bg-red-500 h-6 rounded-full"
+            className="bg-[#4cd964] h-8 rounded-full"
             style={{ width: `${(usedLiters / waterLimit) * 100}%` }}
           />
         </div>
-        <p className="text-sm mt-1">
+        <p className="text-sm mt-2 text-gray-700 sm:text-base">
           {usedLiters.toFixed(0)} litros usados de {waterLimit} L
         </p>
       </div>
 
       {/* Pronóstico por hora */}
-      <div className="border-2 border-blue-300 p-4">
-        <h3 className="text-red-600 font-semibold">Clima y lluvia</h3>
-        <p className="text-red-600 mb-2">
+      <div className="border-2 border-[#5ac8fa] p-6 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <h3 className="text-[#4cd964] font-semibold text-lg sm:text-xl">Clima y lluvia</h3>
+        <p className="text-[#4cd964] mb-3 text-sm sm:text-base">
           Tu hora ideal de riego es a las 2AM
         </p>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm sm:text-base">{error}</p>}
 
         {hourlyData && (
-          <div className="bg-indigo-900 text-white rounded-xl p-4 shadow-md">
-            <h4 className="text-lg font-semibold mb-2">Pronóstico por hora</h4>
-            <div className="flex overflow-x-auto gap-4">
+          <div className="bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-xl p-6 shadow-lg">
+            <h4 className="text-lg sm:text-xl font-semibold mb-3">Pronóstico por hora</h4>
+            <div className="flex overflow-x-auto gap-6">
               {hourlyData.map((item, i) => (
                 <div
                   key={i}
-                  className="flex flex-col items-center min-w-[60px] text-center"
+                  className="flex flex-col items-center min-w-[80px] sm:min-w-[100px] text-center"
                 >
                   {item.icon}
-                  <div className="text-sm">{item.temp}°</div>
-                  <div className="text-xs">{item.time}</div>
-                  <div className="text-xs text-blue-200">{item.rain}%</div>
+                  <div className="text-sm sm:text-base">{item.temp}°</div>
+                  <div className="text-xs sm:text-sm">{item.time}</div>
+                  <div className="text-lg sm:text-xl font-semibold text-yellow-300">
+                    {item.rain}%
+                  </div>
                 </div>
               ))}
             </div>
@@ -111,9 +115,9 @@ const Dashboard = () => {
       </div>
 
       {/* Alerta de humedad */}
-      <div className="border-2 border-red-500 p-4">
-        <h3 className="text-red-600 font-semibold">
-          ! Cultivo #1 (PAPAS) bajo en humedad
+      <div className="p-6 bg-gradient-to-r from-[#4cd964] to-[#5ac8fa] text-white rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <h3 className="font-semibold text-lg sm:text-xl">
+          ¡Cultivo #1 (PAPAS) bajo en humedad!
         </h3>
       </div>
     </div>
