@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, useMap, FeatureGroup, Polygon } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, FeatureGroup, Polygon, CircleMarker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
@@ -86,8 +86,8 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
 
       // Generación de puntos distribuidos de manera estratégica
       const puntosSensores = generarPuntosAleatoriosDentroDelPoligono(
-        turfPolygon, 
-        sensoresNecesarios, 
+        turfPolygon,
+        sensoresNecesarios,
         100 // radio de 100 metros para evitar solapamientos
       );
 
@@ -95,6 +95,7 @@ const MapDrawControl = ({ onPoligonoConfirmado }) => {
         id: Date.now() + i,
         lat: f.geometry.coordinates[1],
         lng: f.geometry.coordinates[0],
+        nombre: `Sensor ${i + 1}`, // Nombre por defecto
         temperatura: Math.floor(Math.random() * 10) + 20,
         humedad: Math.floor(Math.random() * 50) + 40,
         coordenadas: [f.geometry.coordinates[1], f.geometry.coordinates[0]],
@@ -119,16 +120,30 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
   const [ubicacion, setUbicacion] = useState([28.634, -106.069]);
   const [nombreGrupo, setNombreGrupo] = useState("");
   const [datosGrupo, setDatosGrupo] = useState(null);
+  const [gruposExistentes, setGruposExistentes] = useState([]);
 
   useEffect(() => {
+    // Cargar ubicación actual del usuario
     navigator.geolocation.getCurrentPosition(
       (pos) => setUbicacion([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
+      () => {}, // Manejar error de geolocalización si es necesario
       { enableHighAccuracy: true }
     );
+
+    // Cargar grupos existentes desde localStorage
+    const datosGuardados = localStorage.getItem("gruposSensores");
+    if (datosGuardados) {
+      try {
+        setGruposExistentes(JSON.parse(datosGuardados));
+      } catch (e) {
+        console.error("Error al parsear gruposSensores existentes:", e);
+        setGruposExistentes([]); // Asegurar que sea un array en caso de error
+      }
+    }
   }, []);
 
   return (
+    // Contenedor principal del modal
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[80vh] flex flex-col">
         <div className="p-4 border-b">
@@ -141,6 +156,7 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
             className="mt-2 w-full border px-4 py-2 rounded-lg text-gray-700"
           />
         </div>
+        {/* Contenedor del mapa */}
         <div className="flex-1">
           <MapContainer center={ubicacion} zoom={16} style={{ height: "100%", width: "100%" }}>
             <TileLayer
@@ -148,8 +164,44 @@ const AgregarGrupoDesdeMapa = ({ onGrupoConfirmado, onCancel }) => {
               attribution='Tiles © Esri &mdash; Source: Esri, Earthstar Geographics'
             />
             <MapDrawControl onPoligonoConfirmado={setDatosGrupo} />
+            {/* Mostrar polígono dibujado actualmente */}
             {datosGrupo?.polygon && (
               <Polygon positions={datosGrupo.polygon} pathOptions={{ color: "green" }} />
+            )}
+
+            {/* Mostrar polígonos de grupos existentes */}
+            {gruposExistentes.map((grupo, index) =>
+              Array.isArray(grupo.polygon) && grupo.polygon.length >= 3 ? (
+                <Polygon
+                  key={`existente-grupo-${index}`}
+                  positions={grupo.polygon}
+                  pathOptions={{ color: "blue", weight: 2, dashArray: '5, 5' }} // Estilo diferente para distinguir
+                >
+                  <Tooltip direction="top" sticky>
+                    {grupo.nombre.toUpperCase()} (Existente)
+                  </Tooltip>
+                </Polygon>
+              ) : null
+            )}
+
+            {/* Mostrar sensores de grupos existentes */}
+            {gruposExistentes.flatMap((grupo, grupoIdx) =>
+              Array.isArray(grupo.sensores)
+                ? grupo.sensores
+                  .filter((sensor) => sensor.lat !== undefined && sensor.lng !== undefined)
+                  .map((sensor, i) => (
+                    <CircleMarker
+                      key={`existente-sensor-${grupoIdx}-${sensor.id || i}`} // Usar sensor.id si existe, sino el índice
+                      center={[sensor.lat, sensor.lng]}
+                      radius={3} // Más pequeños para no saturar
+                      pathOptions={{ color: "cyan", fillColor: "cyan", fillOpacity: 0.7 }}
+                    >
+                      <Tooltip direction="top" sticky>
+                        Sensor {sensor.nombre || `S-${i + 1}`} (Existente)
+                      </Tooltip>
+                    </CircleMarker>
+                  ))
+                : []
             )}
           </MapContainer>
         </div>
