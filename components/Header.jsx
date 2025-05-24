@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react" 
 import Image from "next/image"
-import { LayoutDashboard, Map, Thermometer, User } from "lucide-react" 
+import { LayoutDashboard, Map, Thermometer } from "lucide-react" 
 import React from "react"
 import { usePathname } from "next/navigation"
 
@@ -42,7 +42,7 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-40 w-full bg-[#4cd964] shadow-lg">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex h-16 items-center justify-between"> {/* Cambié flex-grow por justify-between */}
+          <div className="flex h-16 items-center justify-between">
             {/* Contenedor del logo */}
             <div className="flex items-center gap-3 mr-8">
               <Link href="/" className="flex items-center gap-3">
@@ -53,9 +53,9 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Contenedor de navegación */}
-            <div className="flex-grow flex justify-center"> {/* Aquí sigue el centro */}
-              <nav className="flex items-center gap-4 mx-auto">
+            {/* Menú de navegación para escritorio */}
+            {!isMobileView && (
+              <nav className="flex items-center gap-6">
                 {navigationLinks.map((link) => (
                   <NavItem
                     key={link.href}
@@ -67,7 +67,7 @@ export default function Header() {
                   </NavItem>
                 ))}
               </nav>
-            </div>
+            )}
           </div>
         </div>
       </header>
