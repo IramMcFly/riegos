@@ -12,7 +12,7 @@ const landing = () => {
         <div style={styles.container}>
             <header style={styles.header}>
                 <h1 style={styles.mainTitle}>Bienvenido a RiegOS</h1>
-                <p style={styles.headerSubtitle}>Soluciones Inteligentes para la Gestión y Monitoreo</p>
+                <p style={styles.headerSubtitle}>Soluciones Inteligentes para la Gestión y Monitoreo de Riego</p>
             </header>
 
             <section
@@ -68,7 +68,7 @@ const landing = () => {
                 </p>
                 <ul style={{ ...styles.list, ...styles.queVendemosList }}> {/* Aplicar estilo para la lista */}
                     <li style={{ ...styles.listItem, ...styles.queVendemosText }}>Visualizar datos en tiempo real y consultar históricos.</li>
-                    <li style={{ ...styles.listItem, ...styles.queVendemosText }}>Configurar alertas personalizadas.</li>
+                    <li style={{ ...styles.listItem, ...styles.queVendemosText }}>Vista alertas personalizadas.</li>
                     <li style={{ ...styles.listItem, ...styles.queVendemosText }}>Analizar tendencias y patrones para optimizar recursos.</li>
                     <li style={{ ...styles.listItem, ...styles.queVendemosText }}>Gestionar múltiples sensores y ubicaciones desde un solo lugar.</li>
                 </ul>
